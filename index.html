@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>🎯 Código Correcto - Nivel Difícil</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9fafb;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    h1 {
+      color: #1b1b32;
+    }
+
+    #game-container {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    .code-option {
+      background-color: #f0f0f0;
+      border: 2px solid #444;
+      padding: 1rem;
+      margin: 1rem;
+      cursor: pointer;
+      text-align: left;
+      font-family: monospace;
+      white-space: pre-wrap;
+      transition: transform 0.2s;
+    }
+
+    .code-option:hover {
+      background-color: #dde;
+      transform: scale(1.01);
+    }
+
+    #score, #lives {
+      font-size: 1.2rem;
+      margin: 1rem;
+    }
+
+    #message {
+      font-size: 1.4rem;
+      margin: 1.5rem;
+      font-weight: bold;
+    }
+
+    button {
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🧠 Encuentra el Código Correcto (Nivel Difícil)</h1>
+
+  <div id="game-container">
+    <div id="score">Puntos: 0</div>
+    <div id="lives">Vidas: 3</div>
+    <div id="options-container"></div>
+    <div id="message"></div>
+    <button onclick="nextRound()">Siguiente Ronda</button>
+  </div>
+
+  <script>
+    const rounds = [
+      {
+        correct: `<form action="/submit" method="post">\n  <input type="email" name="correo" required>\n</form>`,
+        options: [
+          `<form action="/submit" method="post">\n  <input type="email" name="correo" required>\n</form>`,
+          `<form action="/submit" method="post">\n  <input type="email" name="correo">\n<form>`,
+          `<form action="/submit" method="get">\n  <input type="correo" required>\n</form>`,
+          `<form method="post">\n  <input name="correo" type="text">\n</form>`
+        ]
+      },
+      {
+        correct: `<ul>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>`,
+        options: [
+          `<ul>\n  <li>Item 1\n  <li>Item 2</li>\n</ul>`,
+          `<ul>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>`,
+          `<ul>\n  <li>Item 1</li>\n  <li>Item 2</li>`,
+          `<ul>\n  <li>Item 1</ul>\n  <li>Item 2</li>`
+        ]
+      },
+      {
+        correct: `<a href="https://example.com" target="_blank" rel="noopener">Visítanos</a>`,
+        options: [
+          `<a href="https://example.com" target="_blank" rel="noopener">Visítanos</a>`,
+          `<a href="https://example.com" target="blank">Visítanos</a>`,
+          `<a target="_blank" href="https://example.com">Visítanos</a>`,
+          `<a href="example.com" target="_blank" rel="nofollow">Visítanos</a>`
+        ]
+      },
+      {
+        correct: `div {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}`,
+        options: [
+          `div {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}`,
+          `div {\n  display: flexbox;\n  justify-content: center;\n  align-items: middle;\n}`,
+          `div {\n  display: flex;\n  justify-content: middle;\n  align-items: center;\n}`,
+          `div {\n  display: flex;\n  align-content: center;\n  justify-items: center;\n}`
+        ]
+      },
+      {
+        correct: `<button type="submit" disabled>Enviar</button>`,
+        options: [
+          `<button type="submit" disabled>Enviar</button>`,
+          `<button submit disabled>Enviar</button>`,
+          `<button type="submit" disable>Enviar</button>`,
+          `<button type="button" disabled="true">Enviar</button>`
+        ]
+      }
+    ];
+
+    let score = 0;
+    let lives = 3;
+    let currentRound = 0;
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function loadRound() {
+      const container = document.getElementById("options-container");
+      const message = document.getElementById("message");
+      message.textContent = "";
+
+      if (currentRound >= rounds.length || lives <= 0) {
+        message.textContent = score >= 4
+          ? `🎉 ¡Buen trabajo! Puntuación final: ${score}`
+          : `🧪 Juego terminado. Tu puntuación final fue: ${score}`;
+        container.innerHTML = "";
+        return;
+      }
+
+      const round = rounds[currentRound];
+      const options = [...round.options];
+      shuffle(options);
+
+      container.innerHTML = "";
+      options.forEach(opt => {
+        const div = document.createElement("div");
+        div.className = "code-option";
+        div.textContent = opt;
+        div.onclick = () => checkAnswer(opt, round.correct);
+        container.appendChild(div);
+      });
+    }
+
+    function checkAnswer(selected, correct) {
+      const message = document.getElementById("message");
+      if (selected === correct) {
+        score++;
+        message.textContent = "✅ ¡Correcto!";
+      } else {
+        lives--;
+        score = Math.max(score - 1, 0);
+        message.textContent = `❌ Incorrecto. Vidas restantes: ${lives}`;
+        if (lives === 0) {
+          message.textContent += "\n💀 Fin del juego.";
+          document.getElementById("options-container").innerHTML = "";
+        }
+      }
+
+      document.getElementById("score").textContent = "Puntos: " + score;
+      document.getElementById("lives").textContent = "Vidas: " + lives;
+
+      currentRound++;
+    }
+
+    function nextRound() {
+      if (lives > 0) {
+        loadRound();
+      }
+    }
+
+    // Inicia el juego
+    loadRound();
+  </script>
+
+</body>
+</html>
